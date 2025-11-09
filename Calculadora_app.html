@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Cortes</title>
+    <style>
+        /* Estilos CSS para replicar la apariencia de la App */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .app-mockup {
+            width: 375px; /* Ancho típico de un móvil */
+            height: 812px; /* Alto típico de un móvil */
+            margin: 20px;
+            background-color: white;
+            border-radius: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            position: relative;
+        }
+        .header {
+            background-color: #1087e6; /* Color de la barra superior */
+            color: white;
+            padding: 15px 20px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+        .header span {
+            margin-right: 10px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .content {
+            padding: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .input-row {
+            display: flex;
+            align-items: center;
+        }
+        input[type="number"] {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px 0 0 4px;
+            font-size: 16px;
+        }
+        .btn-calcular {
+            background-color: #5cb85c; /* Color verde para el botón */
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+        .price-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+        }
+        .price-box h4 {
+            margin: 0;
+            font-size: 16px;
+            color: #333;
+        }
+        .price-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #5cb85c; /* Color verde para el precio */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: #f8f8f8;
+            font-weight: bold;
+            text-align: left;
+            color: #333;
+        }
+        td:nth-child(2), td:nth-child(3) {
+            text-align: center;
+        }
+        .material-col {
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-mockup">
+    <div class="header">
+        <span>&larr;</span>
+        Calculadora de Cortes
+    </div>
+
+    <div class="content">
+        <div class="input-group">
+            <label>ANCHO (en cm.)</label>
+            <div class="input-row">
+                <input type="number" id="ancho" value="100.0" step="0.1">
+                <button class="btn-calcular" onclick="mostrarCortes()">CALCULAR</button>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>ALTO (en cm.)</label>
+            <input type="number" id="alto" value="100.0" step="0.1" style="width: 100%; border-radius: 4px;">
+        </div>
+        
+        <div class="price-box">
+            <h4>PRECIO TOTAL:</h4>
+            <span class="price-value">Bs. 460.00</span>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>MATERIAL</th>
+                    <th>CORTES (cm)</th>
+                    <th>CANT.</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-resultados">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    /**
+     * Lógica de Cálculo: Calcula los cortes en base a las fórmulas deducidas.
+     */
+    function calcularCortes(ancho, alto) {
+        ancho = parseFloat(ancho);
+        alto = parseFloat(alto);
+
+        // Se utilizan las fórmulas deducidas previamente (Ancho=100, Alto=100)
+        const cortes = [
+            { material: "JAMBA", corte: [(ancho - 0.3).toFixed(1)], cant: 2 },
+            { material: "GANCHO", corte: [(alto - 3.5).toFixed(1)], cant: 2 },
+            // PIERNA en el diseño muestra 2 medidas, se usan las dos más lógicas
+            { material: "PIERNA", corte: ["2.0", (alto - 3.5).toFixed(1)], cant: 2 }, 
+            
+            // RIEL SUPERIOR en el diseño muestra 2 medidas, se usan las dos más lógicas
+            { material: "RIEL SUPERIOR", corte: [(ancho - 2.0).toFixed(1), "50.4"], cant: 1 }, 
+            
+            // RIEL INFERIOR en el diseño muestra 2 medidas
+            { material: "RIEL INFERIOR", corte: ["98.0", "50.4"], cant: 1 }, 
+
+            { material: "ZOCALO Y CABEZAL C.PROFUNDO", corte: [((ancho / 2) + 0.4).toFixed(1), "87.0"], cant: 2 },
+            
+            // VIDRIO ZOCALO ARRIBA Y ZOCALO (deducido: Alto - 13.0)
+            { material: "VIDRIO ZOCALO ARRIBA Y ZOCALO", corte: [(alto - 13.0).toFixed(1)], cant: 2 }, 
+            
+            // VIDRIO ANCHO (Las últimas filas tienen datos variables)
+            { material: "VIDRIO ANCHO", corte: ["-"], cant: "-" },
+            { material: "VIDRIO ANCHO", corte: [((ancho - 13.4) / 2).toFixed(1)], cant: 0 }
+        ];
+
+        return cortes;
+    }
+
+    /**
+     * Función principal que actualiza la interfaz de usuario.
+     */
+    function mostrarCortes() {
+        const ancho = document.getElementById('ancho').value;
+        const alto = document.getElementById('alto').value;
+
+        if (ancho <= 0 || alto <= 0) {
+            alert("Ingrese dimensiones válidas.");
+            return;
+        }
+
+        const resultados = calcularCortes(ancho, alto);
+        const tablaBody = document.getElementById('tabla-resultados');
+        tablaBody.innerHTML = ''; // Limpiar la tabla
+
+        // Generar las filas de la tabla
+        resultados.forEach(item => {
+            const row = tablaBody.insertRow();
+            
+            const cellMaterial = row.insertCell(0);
+            cellMaterial.className = 'material-col';
+            cellMaterial.textContent = item.material;
+
+            const cellCorte = row.insertCell(1);
+            // Mostrar los cortes separados por espacio o guion
+            cellCorte.textContent = item.corte.join(' '); 
+            
+            const cellCant = row.insertCell(2);
+            cellCant.textContent = item.cant;
+        });
+    }
+
+    // Ejecutar el cálculo inicial al cargar la página (para precargar la tabla con 100x100)
+    document.addEventListener('DOMContentLoaded', mostrarCortes);
+</script>
+
+</body>
+  </html>
+                                  
